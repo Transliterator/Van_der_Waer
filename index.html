@@ -1,0 +1,231 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Van der Waerden's Theorem</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    .section {
+      margin-bottom: 20px;
+    }
+    .number-sequence {
+      display: flex;
+      gap: 10px;
+      margin-top: 5px;
+    }
+    .colored-number {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      border-radius: 4px;
+    }
+    .red {
+      background-color: red;
+      color: white;
+    }
+    .blue {
+      background-color: blue;
+      color: white;
+    }
+    .highlight {
+      background-color: #ffff99 !important;
+      color: black;
+    }
+    .indices {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .input-area {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Van der Waerden's Theorem</h2>
+
+  <div class="section">
+    <div><strong>4 Number Sequence:</strong></div>
+    <div class="number-sequence" id="nums4"></div>
+    <div class="number-sequence" id="seq4"></div>
+    <div id="result4"></div>
+  </div>
+
+  <div class="section">
+    <div><strong>9 Number Sequence:</strong></div>
+    <div class="number-sequence" id="nums9"></div>
+    <div class="number-sequence" id="seq9"></div>
+    <div id="result9">Arithmetic Progression: Yes (Guaranteed by the theorem)</div>
+  </div>
+
+  <div class="input-area">
+    <label for="numSequences">Number of Sequences to Generate:</label>
+    <input type="number" id="numSequences" value="10" min="1" max="1000" />
+    <button onclick="generateAll()">Generate</button>
+  </div>
+
+  <div class="section">
+    <div><strong>Random Number Sequences (from 1 to 9):</strong></div>
+    <div class="indices" id="indices30"></div>
+    <div id="sequencesContainer"></div>
+    <div id="longestSequenceContainer"></div>
+    <div id="maxGeneratedInfo"></div>
+  </div>
+
+  <script>
+    function getRandomNumber(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function findSequentialArithmeticProgression(numbers) {
+      for (let i = 0; i < numbers.length - 2; i++) {
+        const a = numbers[i];
+        const b = numbers[i + 1];
+        const c = numbers[i + 2];
+        if ((b - a === c - b)) {
+          return [i, i + 1, i + 2];
+        }
+      }
+      return [];
+    }
+
+    function generateIndices() {
+      const indicesContainer = document.getElementById('indices30');
+      indicesContainer.innerHTML = '';
+      for (let i = 1; i <= 30; i++) {
+        const div = document.createElement('div');
+        div.className = 'colored-number';
+        div.textContent = i;
+        div.style.background = 'transparent';
+        div.style.color = 'black';
+        indicesContainer.appendChild(div);
+      }
+    }
+
+    function generateRandomUntilSequentialAP() {
+      const numbers = [];
+      let apIndices = [];
+      while (apIndices.length === 0) {
+        numbers.push(getRandomNumber(1, 9));
+        apIndices = findSequentialArithmeticProgression(numbers);
+      }
+      return { numbers, apIndices };
+    }
+
+    function displayRow(container, numbers, apIndices) {
+      const row = document.createElement('div');
+      row.className = 'number-sequence';
+      numbers.slice(0, 30).forEach((num, i) => {
+        const div = document.createElement('div');
+        div.className = 'colored-number';
+        div.textContent = num;
+        if (apIndices.includes(i)) div.classList.add('highlight');
+        row.appendChild(div);
+      });
+      container.appendChild(row);
+    }
+
+    function getRandomColor() {
+      return Math.random() < 0.5 ? 'red' : 'blue';
+    }
+
+    function checkArithmeticProgression(colors) {
+      const n = colors.length;
+      for (let i = 0; i < n - 2; i++) {
+        for (let j = i + 1; j < n - 1; j++) {
+          const diff = j - i;
+          const k = j + diff;
+          if (k < n && colors[i] === colors[j] && colors[j] === colors[k]) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    function generateColorSequence(containerId, length, resultId, numsContainerId) {
+      const container = document.getElementById(containerId);
+      const numsContainer = document.getElementById(numsContainerId);
+      container.innerHTML = '';
+      numsContainer.innerHTML = '';
+
+      let colors = [];
+      let numbers = [];
+
+      for (let i = 0; i < length; i++) {
+        colors.push(getRandomColor());
+        numbers.push(i + 1);
+      }
+
+      numbers.forEach(num => {
+        const div = document.createElement('div');
+        div.className = 'colored-number';
+        div.textContent = num;
+        div.style.background = 'transparent';
+        div.style.color = 'black';
+        numsContainer.appendChild(div);
+      });
+
+      colors.forEach(color => {
+        const div = document.createElement('div');
+        div.className = `colored-number ${color}`;
+        div.textContent = color === 'red' ? 'R' : 'B';
+        container.appendChild(div);
+      });
+
+      if (resultId) {
+        const hasAP = checkArithmeticProgression(colors);
+        document.getElementById(resultId).textContent = 'Arithmetic Progression: ' + (hasAP ? 'Yes' : 'No');
+      }
+    }
+
+    function generateAll() {
+      const N = parseInt(document.getElementById('numSequences').value);
+
+      generateColorSequence('seq4', 4, 'result4', 'nums4');
+      generateColorSequence('seq9', 9, null, 'nums9');
+
+      generateIndices();
+
+      const container = document.getElementById('sequencesContainer');
+      container.innerHTML = '';
+      document.getElementById('longestSequenceContainer').innerHTML = '';
+
+      let maxGenerated = 0;
+      let maxSet = null;
+
+      for (let i = 0; i < N; i++) {
+        const { numbers, apIndices } = generateRandomUntilSequentialAP();
+        if (numbers.length > maxGenerated) {
+          maxGenerated = numbers.length;
+          maxSet = { numbers, apIndices };
+        }
+        if (i < 10) {
+          displayRow(container, numbers, apIndices);
+        }
+      }
+
+      if (maxSet) {
+        const title = document.createElement('div');
+        title.style.marginTop = '20px';
+        title.innerHTML = '<strong>Longest Sequence Required to Find Progression:</strong>';
+        document.getElementById('longestSequenceContainer').appendChild(title);
+        displayRow(document.getElementById('longestSequenceContainer'), maxSet.numbers, maxSet.apIndices);
+      }
+
+      document.getElementById('maxGeneratedInfo').textContent = `Maximum Random number generated for sequence: ${maxGenerated}`;
+    }
+
+    window.onload = generateAll;
+  </script>
+</body>
+</html>
